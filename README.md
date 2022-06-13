@@ -35,8 +35,9 @@ I made easy way for that :)
 use `checkAuth` after $route like this:
 
 ```php 
-$route->checkAuth('{CHECK_AUTH_FUNCTION}')->Route("/login", function () {
+$route->Route("/login", function () {
     global $route;
+    $route->checkAuth('{CHECK_AUTH_FUNCTION}');
     return $route->loadFunction("LoginFunction");
 });  
 ```
@@ -48,7 +49,7 @@ route and go to other route for check.
 you can use checkAuth as many as you want after each other.
 
 ```php
-->checkAuth('{A}')->checkAuth('{B}')->checkAuth('{C}')->Route('{PATH}', '{VIEW}');
+$route->checkAuth('{A}')->checkAuth('{B}')->checkAuth('{C}');
 ```
 
 ## Let's go to work with input validator

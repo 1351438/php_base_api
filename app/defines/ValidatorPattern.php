@@ -16,5 +16,19 @@ const VALIDATOR_PATTERN = [
             "type" => "STRING",
             "require" => true
         ]
+    ],
+    "SIGNUP" => [
+        "username" => [
+            "type" => "INT",
+            "require" => true
+        ],
+        "password" => [
+            "type" => "STRING",
+            "require" => true
+        ],
+        "name" => [
+            "type" => "STRING",
+            "require" => true
+        ]
     ]
 ];

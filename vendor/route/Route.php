@@ -5,14 +5,17 @@ class Route
     private $functionsPath;
     private $data;
     private bool $authFailed = false;
+    private bool $stopSearching = false;
+    private bool $show404;
 
     /**
      * @param $path
      *  Set default folder of functions you will use on loadFunction method.
      */
-    public function __construct($path)
+    public function __construct($path, $show404 = true)
     {
         $this->functionsPath = $path;
+        $this->show404 = $show404;
     }
 
     /**
@@ -22,39 +25,49 @@ class Route
      *
      * Define your actions and paths using Route.
      */
-    public function Route($path, $view)
+    public function Route($path, $view): bool
     {
         if ($this->authFailed === false) {
-            $params = $_GET['paths'];
-            /// When the url is dynamic
-            if (strpos($path, '*') !== false) {
-                if ($path === '*') {
+            if (!$this->stopSearching) {
+                $params = $_GET['paths'];
+                /// When the url is dynamic
+                if (strpos($path, '*') !== false) {
+                    if ($path === '*') {
+                        $this->data = $view();
+                        $this->stopSearching = true;
+                        return true;
+                    } else {
+                        $pathParams = explode("/", $path);
+                        $paramsExploded = explode('/', "/$params");
+
+                        $ok = true;
+                        $data = [];
+                        for ($i = 0; $i < count($paramsExploded); $i++) {
+                            $p = $paramsExploded[$i];
+                            if ($pathParams[$i] == '*') {
+                                $data[] = $p;
+                            }
+                            if (strtolower($pathParams[$i]) != strtolower($p) && $pathParams[$i] != '*') {
+                                $ok = false;
+                                break;
+                            }
+                        }
+                        if ($ok) {
+                            $this->data = $view($data);
+                            $this->stopSearching = true;
+                            return true;
+                        }
+                    }
+                } else if (strtolower("/$params") === strtolower($path)) {
                     $this->data = $view();
+                    $this->stopSearching = true;
                     return true;
                 } else {
-                    $pathParams = explode("/", $path);
-                    $paramsExploded = explode('/', "/$params");
-
-                    $ok = true;
-                    $data = [];
-                    for ($i = 0; $i < count($paramsExploded); $i++) {
-                        $p = $paramsExploded[$i];
-                        if ($pathParams[$i] == '*') {
-                            $data[] = $p;
-                        }
-                        if (strtolower($pathParams[$i]) != strtolower($p) && $pathParams[$i] != '*') {
-                            $ok = false;
-                            break;
-                        }
-                    }
-                    if ($ok) {
-                        $this->data = $view($data);
-                        return true;
+                    if($this->show404) {
+                        $this->data = $this->loadFunction("NotfoundFunction");
                     }
                 }
-            } else if (strtolower("/$params") === strtolower($path)) {
-                $this->data = $view();
-                return true;
+                return false;
             }
             return false;
         } else {
@@ -74,7 +87,7 @@ class Route
             return $this;
         } else {
             if (is_array($view)) {
-                if (!$this->authFailed) {
+                if (!$this->authFailed && !$this->stopSearching) {
                     $this->data = $view;
                     $this->authFailed = true;
                 }

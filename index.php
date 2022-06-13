@@ -12,16 +12,17 @@ $result = (new Result)->setErrorsList([
 
 /** Routes */
 $route = (new Route(__DIR__ . "/app/functions"));
-/// 404 notfound screen.
-$route->Route("*", function () {
-    global $route;
-    return $route->loadFunction("NotfoundFunction");
-});
-/// Check the usual inputs field e.g. Fingerprint.
+/// Check the usual input field e.g. Fingerprint.
 $route = $route->checkAuth('ValidateInputs', VALIDATOR_PATTERN['USUAL']);
 /// Create Action Path You can use CheckAuth after another CheckAuth and if the all checkAuth return true then we get to Route to load page;
-$route->checkAuth('ValidateInputs', VALIDATOR_PATTERN['LOGIN'])->Route("/login", function () {
+$route->Route("/login", function () {
     global $route;
+    $route->checkAuth('ValidateInputs', VALIDATOR_PATTERN['LOGIN']);
+    return $route->loadFunction("LoginFunction");
+});
+$route->Route("/signup", function () {
+    global $route;
+    $route->checkAuth('ValidateInputs', VALIDATOR_PATTERN['SIGNUP']);
     return $route->loadFunction("LoginFunction");
 });
 /// Display The results from function in the way you like.
